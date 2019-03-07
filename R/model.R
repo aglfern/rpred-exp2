@@ -1,6 +1,8 @@
 
 NIL_STATE <- -1
 
+INCLUDE_SOJOURN_IN_PREDICTION <- FALSE
+
 
 #' Title
 #'
@@ -837,11 +839,15 @@ annotate_model <- function(fold_events, resultFile, type, fold, horiz)
    events_anot$sojourn_seq_state_mean <-
       summary_sj_seq$mean[match(events_anot$seq_state_id, summary_sj_seq$seq_state_id)]
 
-   # prediction based in the mean and sojourn
-   #calculate_prediction_f1(events_anot)
 
-   # prediction based only in the mean
-   calculate_prediction_f2(events_anot)
+   if ( INCLUDE_SOJOURN_IN_PREDICTION ) {
+      # prediction based in the mean and sojourn
+      calculate_prediction_f1(events_anot)
+   } else {
+      # prediction based only in the mean
+      calculate_prediction_f2(events_anot)
+   }
+
 
 
    # remove valorers sem match para calculo erro

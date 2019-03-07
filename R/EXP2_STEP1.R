@@ -8,6 +8,7 @@ STATUS_COLUMN_NAME <- "incident_state"
 EVENT_TIMESTAMP_COLUMN_NAME <- "updated_at"
 CLOSED_STATUS_VALUE <- "Closed"
 REMOVE_LONGER_CASES <- FALSE
+INCLUDE_SOJOURN_IN_PREDICTION <- FALSE
 
 LAST_RUN_MODEL <- NULL
 LAST_RUN_PREDICT <- NULL
@@ -64,22 +65,50 @@ res_05_7 <- EXP2_STEP_1(horizon=7,sel_attributes="category")
 x <- EXP2_STEP_1(horizon=5,sel_attributes=c("assigned_to","subcategory"))
 
 
+EXECUTION_DESCRIPTION <- " Execução com horizontes selecionados, em 20K (A+B) validado contra 4.9K (C)"
+
+exp1_final_h6 <- EXP2_STEP_1(horizon=6,sel_attributes=c("incident_state", "category", "priority"))
+exp1_final_h7 <- EXP2_STEP_1(horizon=7,sel_attributes=c("incident_state", "category", "priority"))
+
+
+REMOVE_LONGER_CASES <- TRUE
+
+exp1_final_h6_rl <- EXP2_STEP_1(horizon=6,sel_attributes=c("incident_state", "category", "priority"))
+exp1_final_h7_rl <- EXP2_STEP_1(horizon=7,sel_attributes=c("incident_state", "category", "priority"))
+
+
+REMOVE_LONGER_CASES <- FALSE
+INCLUDE_SOJOURN_IN_PREDICTION <- TRUE
+
+exp1_final_h6_c3 <- EXP2_STEP_1(horizon=6,sel_attributes=c("incident_state", "category", "priority"))
+exp1_final_h7_c3 <- EXP2_STEP_1(horizon=7,sel_attributes=c("incident_state", "category", "priority"))
+
+REMOVE_LONGER_CASES <- FALSE
+INCLUDE_SOJOURN_IN_PREDICTION <- FALSE
+
+exp1_final_h8 <- EXP2_STEP_1(horizon=8,sel_attributes=c("incident_state", "category", "priority"))
+exp1_final_h9 <- EXP2_STEP_1(horizon=9,sel_attributes=c("incident_state", "category", "priority"))
+
+
 EXP2_STEP_1 <- function(horizon=selected_horizon, sel_attributes=selected_attributes,
                         training_fn="preproc_ds1and2.csv",validation_fn="preproc_ds3.csv")
 {
-   generate_log(" ************* Initiating EXP 2 STEP 1 *************", 1)
+   generate_log(" ************* Initiating EXP 1 STEP 5 *************", 1)
+   generate_log(EXECUTION_DESCRIPTION)
+   generate_log(paste(" REMOVE_LONGER_CASES == ",REMOVE_LONGER_CASES))
+   generate_log(paste(" INCLUDE_SOJOURN_IN_PREDICTION == ",INCLUDE_SOJOURN_IN_PREDICTION))
    generate_log(paste("Training file: ",training_fn,"Validation file:",validation_fn))
 
    startTime <- Sys.time()
 
    # the base name for the files that will store all the results
-   statsFile <- paste("results_EXP2_STEP1_",format(startTime, "%Y%m%d-%H%M"),sep="")
+   statsFile <- paste("results_EXP1_STEP5_",format(startTime, "%Y%m%d-%H%M"),sep="")
 
    model <- NULL
    predict <- NULL
    eval_stats_arr <- NULL
 
-   trainingFold <- read.csv(file=file.path("data", training_fn),nrows = 104)
+   trainingFold <- read.csv(file=file.path("data", training_fn)) #,nrows = 104)
 
    #option to remove from the training the outliers with elapsed time much bigger
    if ( REMOVE_LONGER_CASES == TRUE ) {
@@ -100,7 +129,7 @@ EXP2_STEP_1 <- function(horizon=selected_horizon, sel_attributes=selected_attrib
    training_stats <- annotate_model(trainingFold, rfn, "T", 0, horizon)
 
    # prediction over the validation data set
-   testingFold <- read.csv(file=file.path("data", validation_fn),nrows = 104)
+   testingFold <- read.csv(file=file.path("data", validation_fn)) #,nrows = 104)
 
    # builds the transition system for teh testing fold
    predict <- build_prediction(testingFold,model)
@@ -125,10 +154,8 @@ EXP2_STEP_1 <- function(horizon=selected_horizon, sel_attributes=selected_attrib
    sfilen <- file.path("data/test",paste(statsFile,"_STATS.csv",sep=""))
    write.table(eval_stats_df1, file=sfilen, row.names=FALSE, col.names = TRUE, sep=";", dec=",")
 
+   generate_log(paste("Stat file generated: [",statsFile,"_STATS.csv]",sep=""))
    generate_log("Step completed successfully.",2)
-
-   #LAST_RUN_MODEL <- model
-   #LAST_RUN_PREDICT <- predict
 
    return(eval_stats_df1)
 

@@ -162,3 +162,7 @@ subset <- best.first.search(attrib, attrib_eval)
 f <- as.simple.formula(subset,"m")
 print(f)
 
+
+MAPE(1, 1); MAPE(2, 1); MAPE(3, 1); MAPE(0, 1); MAPE(1.1, 1)
+
+RMSPE(1, 1); RMSPE(2, 1); RMSPE(3, 1); RMSPE(0, 1); RMSPE(1.1, 1)
